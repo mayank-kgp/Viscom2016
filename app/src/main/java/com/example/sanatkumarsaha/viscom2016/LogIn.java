@@ -349,6 +349,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
 
                                 editor.putString("from", user_details.getString("from"));
                                 editor.putString("to", user_details.getString("to"));
+                                editor.putString("category",user_details.getString("category"));
                             }
                             editor.putString("email", email);
                             editor.putBoolean("LogInStat", true);
@@ -361,7 +362,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                                 editor.putString("mpassword", "");
                             }
 
-                            Toast.makeText(LogIn.this,"Logged in Successfully",Toast.LENGTH_LONG).show();
+                            Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
 
 
                             Intent i = new Intent(LogIn.this, MainActivity.class);

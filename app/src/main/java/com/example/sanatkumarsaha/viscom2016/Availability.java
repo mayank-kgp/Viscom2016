@@ -82,7 +82,7 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
         else from.setText(Integer.toString(fromIntHour-12)+":"+ (fromIntMinute>=10 ? fromIntMinute : "0"+fromIntMinute) +""+" PM");
 
 
-        if (fromIntHour<12)
+        if (toIntHour<12)
             to.setText(toIntHour+":"+ (toIntMinute>=10 ? toIntMinute : toIntMinute+"0") +""+" AM");
         else to.setText(Integer.toString(toIntHour-12)+":"+ (toIntMinute>=10 ? toIntMinute : toIntMinute+"0") +""+" PM");
 
