@@ -27,12 +27,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.widget.Toolbar;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -148,6 +151,12 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
         setSupportActionBar(toolbar);
 
         volleySingleton = VolleySingleton.getInstance();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(getResources().getColor(R.color.colorPrimary));
+        }
 
         try {
             byte[] encodedKey = Base64.decode(public_Key.getBytes("utf-8"), Base64.DEFAULT);
@@ -315,7 +324,6 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                 public void onResponse(String response) {
 
                     showProgress(false);
-                    Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
 
                     if(response.equals("Invalid password")) {
                         mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -326,16 +334,22 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                         mEmailView.requestFocus();
 
                     } else {
-                        Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
+
                         try {
+
                             user_details = new JSONObject(response);
+
                             SharedPreferences.Editor editor = sp.edit();
                             editor.putString("name", user_details.getString("name"));
                             editor.putBoolean("isClient", Boolean.parseBoolean(user_details.getString("isClient")) );
                             editor.putBoolean("isProvider", Boolean.parseBoolean(user_details.getString("isProvider")));
-                            editor.putString("password", password);
-                            editor.putString("from", user_details.getString("from"));
-                            editor.putString("to", user_details.getString("to"));
+                            editor.putString("password", URLEncoder.encode(new String(encodedBytes),"UTF-8") );
+
+                            if (Boolean.parseBoolean(user_details.getString("isProvider"))) {
+
+                                editor.putString("from", user_details.getString("from"));
+                                editor.putString("to", user_details.getString("to"));
+                            }
                             editor.putString("email", email);
                             editor.putBoolean("LogInStat", true);
                             editor.commit();
@@ -347,12 +361,18 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                                 editor.putString("mpassword", "");
                             }
 
+                            Toast.makeText(LogIn.this,"Logged in Successfully",Toast.LENGTH_LONG).show();
+
+
                             Intent i = new Intent(LogIn.this, MainActivity.class);
                             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(i);
                             finish();
 
                         } catch (JSONException e) {
+                            Log.d("Sanat_check","Gand Phati");
+                            e.printStackTrace();
+                        } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
                     }
@@ -370,7 +390,11 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                 protected Map<String,String> getParams(){
                     Map<String,String> params = new HashMap<String, String>();
                     params.put("email",email);
-                    params.put("password",password);
+                    try {
+                        params.put("password",URLEncoder.encode(new String(encodedBytes),"UTF-8"));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
                     return params;
                 }
 

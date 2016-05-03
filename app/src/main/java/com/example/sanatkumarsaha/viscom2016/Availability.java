@@ -146,7 +146,7 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
 
     public void submit(View v){
 
-        String url = null;
+        String url = "http://cognitio.co.in/kgp/changetim.php";
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -154,11 +154,11 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
                 if (response.equals("Success")){
 
                     SharedPreferences.Editor editor = sp.edit();
-                    editor.putString("from",from.getText().toString());
-                    editor.putString("to",to.getText().toString());
+                    editor.putString("from",fromHour+"");
+                    editor.putString("to",toHour+"");
                     editor.apply();
 
-                    Toast.makeText(Availability.this,"Request Sent Successfully",Toast.LENGTH_LONG).show();
+                    Toast.makeText(Availability.this,"Data Saved Successfully",Toast.LENGTH_LONG).show();
 
                 } else {
 
@@ -178,8 +178,8 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
                 Map<String,String> params = new HashMap<String, String>();
                 params.put("email",sp.getString("email",""));
                 params.put("password",sp.getString("password",""));
-                params.put("from",from.getText().toString());
-                params.put("to",to.getText().toString());
+                params.put("from",fromHour+"");
+                params.put("to",toHour+"");
                 return params;
             }
 

@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -28,6 +29,8 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity
     VolleySingleton volleySingleton;
     CheckBox medical, security, emotion, education;
     String categoryParams = "";
+    String emergency_type = null;
 
     String public_Key = "MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHTHSaj/S4iuj6oGvUS4zVb++Qio\n" +
             "Nm4/kS+kSducJRbu4McJVPW2ERXyMMCioZhYfByylmv6sahiA8w1/TJtgW/0fgPX\n" +
@@ -157,7 +161,7 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        if (!sp.getBoolean("isProvider",false))
+        if (sp.getBoolean("isProvider",false))
             navigationView.inflateMenu(R.menu.menu_provider);
         else navigationView.inflateMenu(R.menu.menu_client);
         navigationView.setNavigationItemSelectedListener(this);
@@ -172,6 +176,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
 
                         type=4;
+                        emergency_type = "Education";
                         floating.setVisibility(View.VISIBLE);
                         location.setError(null);
 
@@ -293,21 +298,6 @@ public class MainActivity extends AppCompatActivity
     }
     public void closeCategories(View v){
 
-        if (!medical.isChecked() && !security.isChecked() && !emotion.isChecked() && !education.isChecked()){
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Please Select at least one of the categories");
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-
-                }
-            }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // User cancelled the dialog
-                }
-            });
-            return;
-        }
 
         categories.animate().translationY(categories.getHeight()).setListener(new AnimatorListenerAdapter() {
             @Override
@@ -326,6 +316,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void submit(View v){
+
 
         if (location.getText().toString().equals("")){
             location.setError("Field Required");
@@ -360,7 +351,7 @@ public class MainActivity extends AppCompatActivity
                 Map<String,String> params = new HashMap<String, String>();
                 params.put("name",sp.getString("name",""));
                 params.put("email",sp.getString("email",""));
-                params.put("type", type+"");
+                params.put("type", emergency_type);
                 params.put("stress",stress.getProgress()+"");
                 params.put("password",sp.getString("password",""));
                 params.put("urgency",urgency.getProgress()+"");
@@ -387,6 +378,7 @@ public class MainActivity extends AppCompatActivity
     public void medicalClick(View v){
 
         type=1;
+        emergency_type = "Medical";
 
         floating.setVisibility(View.VISIBLE);
         location.setError(null);
@@ -404,6 +396,7 @@ public class MainActivity extends AppCompatActivity
     public void securityClick(View v){
 
         type=2;
+        emergency_type = "Security";
 
         floating.setVisibility(View.VISIBLE);
         location.setError(null);
@@ -420,6 +413,7 @@ public class MainActivity extends AppCompatActivity
     public void emotionClick(View v){
 
         type=3;
+        emergency_type = "Emotion";
 
         floating.setVisibility(View.VISIBLE);
         location.setError(null);
@@ -436,6 +430,8 @@ public class MainActivity extends AppCompatActivity
 
     public  void  submitCategory(View v){
 
+        categoryParams = "";
+
         if (!medical.isChecked() && !security.isChecked() && !emotion.isChecked() && !education.isChecked()){
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -449,6 +445,7 @@ public class MainActivity extends AppCompatActivity
                     // User cancelled the dialog
                 }
             });
+            builder.show();
             return;
         }
 
@@ -459,11 +456,12 @@ public class MainActivity extends AppCompatActivity
         if (education.isChecked()) categoryParams += "Education ";
 
 
-        String  url = null;
+        String  url = "http://cognitio.co.in/kgp/updatecat.php";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+
 
                 if (response.equals("Success")){
 
@@ -474,7 +472,7 @@ public class MainActivity extends AppCompatActivity
 
                 } else {
 
-                    Toast.makeText(MainActivity.this,"Request Error",Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this,response,Toast.LENGTH_LONG).show();
 
                 }
 
@@ -504,11 +502,11 @@ public class MainActivity extends AppCompatActivity
 
         volleySingleton.getmRequestQueue().add(stringRequest);
 
-        floating.animate().translationY(floating.getHeight()).setListener(new AnimatorListenerAdapter() {
+        categories.animate().translationY(categories.getHeight()).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                floating.setVisibility(View.INVISIBLE);
+                categories.setVisibility(View.INVISIBLE);
                 main.setEnabled(true);
                 flag2=false;
                 location.setError(null);
