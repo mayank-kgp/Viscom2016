@@ -315,6 +315,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                 public void onResponse(String response) {
 
                     showProgress(false);
+                    Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
 
                     if(response.equals("Invalid password")) {
                         mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -325,13 +326,14 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                         mEmailView.requestFocus();
 
                     } else {
+                        Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
                         try {
                             user_details = new JSONObject(response);
                             SharedPreferences.Editor editor = sp.edit();
                             editor.putString("name", user_details.getString("name"));
-                            editor.putBoolean("isClient", user_details.getBoolean("isClient"));
-                            editor.putBoolean("isProvider", user_details.getBoolean("isProvider"));
-                            editor.putString("password", new String(encodedBytes));
+                            editor.putBoolean("isClient", Boolean.parseBoolean(user_details.getString("isClient")) );
+                            editor.putBoolean("isProvider", Boolean.parseBoolean(user_details.getString("isProvider")));
+                            editor.putString("password", password);
                             editor.putString("from", user_details.getString("from"));
                             editor.putString("to", user_details.getString("to"));
                             editor.putString("email", email);
@@ -345,7 +347,6 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                                 editor.putString("mpassword", "");
                             }
 
-                            Toast.makeText(LogIn.this,"Successfully Registered",Toast.LENGTH_LONG).show();
                             Intent i = new Intent(LogIn.this, MainActivity.class);
                             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(i);
@@ -369,7 +370,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                 protected Map<String,String> getParams(){
                     Map<String,String> params = new HashMap<String, String>();
                     params.put("email",email);
-                    params.put("password",new String(encodedBytes));
+                    params.put("password",password);
                     return params;
                 }
 

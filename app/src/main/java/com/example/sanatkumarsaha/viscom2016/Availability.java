@@ -72,10 +72,10 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
         sp = getSharedPreferences("Check", Context.MODE_PRIVATE);
 
         int fromIntHour,fromIntMinute, toIntHour,toIntMinute;
-        fromIntHour = sp.getInt("from",0) / 100 ;
-        fromIntMinute = sp.getInt("from",0) % 100 ;
-        toIntHour = sp.getInt("from",0) / 100 ;
-        toIntMinute = sp.getInt("from",0) % 100 ;
+        fromIntHour = Integer.parseInt(sp.getString("from","0")) / 100 ;
+        fromIntMinute = Integer.parseInt(sp.getString("from","0")) % 100 ;
+        toIntHour = Integer.parseInt(sp.getString("to","0")) / 100 ;
+        toIntMinute = Integer.parseInt(sp.getString("to","0")) % 100 ;
 
         if (fromIntHour<12)
             from.setText(fromIntHour+":"+ (fromIntMinute>=10 ? fromIntMinute : "0"+fromIntMinute) +""+" AM");

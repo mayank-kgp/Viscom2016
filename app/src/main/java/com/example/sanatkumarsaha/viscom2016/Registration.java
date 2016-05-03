@@ -555,10 +555,10 @@ public class Registration extends AppCompatActivity implements LoaderCallbacks<C
                         showProgress(false);
 
                         if (!response.contains("Duplicate Email")){
-                            Toast.makeText(Registration.this, "Successfully Registered", Toast.LENGTH_LONG).show();
+                            Toast.makeText(Registration.this, response, Toast.LENGTH_LONG).show();
                             Intent i = new Intent(Registration.this, LogIn.class);
                             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(i);
+                           // startActivity(i);
                         }
 
                         else{
@@ -582,7 +582,7 @@ public class Registration extends AppCompatActivity implements LoaderCallbacks<C
                         params.put("email",email);
                         params.put("age", age);
                         params.put("gender",gender);
-                        params.put("password",new String(encodedBytes));
+                        params.put("password",password);
                         params.put("mobile",mobile);
                         params.put("bloodGroup",blood_group);
                         params.put("isClient", mClient.isChecked()+"");

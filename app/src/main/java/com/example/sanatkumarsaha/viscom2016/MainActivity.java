@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity
     static final int REQUEST_IMAGE_CAPTURE =1;
     static final int REQUEST_SELECT_FILE =2;
     RelativeLayout custom;
-    RelativeLayout floating, categories;
+    RelativeLayout floating, categories, providerLayout;
     LinearLayout main;
     DiscreteSeekBar stress, urgency;
     EditText message, location;
@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity
             "WROngdhuci5ITl0LjHu4h+siiTwVjFidSqQm1g30xpdiNwh7GYIu/nw5TdunAtZU\n" +
             "yRzLGB4qmNsHH0tTAgMBAAE=" ;
     PublicKey publicKey;
+
 
 
     @Override
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity
         security = (CheckBox)findViewById(R.id.securityBox);
         emotion = (CheckBox)findViewById(R.id.emotionBox);
         education = (CheckBox)findViewById(R.id.educationBox);
+        providerLayout = (RelativeLayout)findViewById(R.id.providerLayout);
 
 
         volleySingleton = VolleySingleton.getInstance();
@@ -127,6 +129,9 @@ public class MainActivity extends AppCompatActivity
         if (sp.getBoolean("isProvider",false)){
 
             categories.setVisibility(View.VISIBLE);
+
+            if (!sp.getBoolean("isClient",false))
+            main.setVisibility(View.GONE);
 
         }else {
             categories.setVisibility(View.INVISIBLE);
@@ -353,6 +358,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             protected Map<String,String> getParams(){
                 Map<String,String> params = new HashMap<String, String>();
+                params.put("name",sp.getString("name",""));
                 params.put("email",sp.getString("email",""));
                 params.put("type", type+"");
                 params.put("stress",stress.getProgress()+"");
