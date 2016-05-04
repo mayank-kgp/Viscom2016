@@ -1,7 +1,6 @@
 package com.example.sanatkumarsaha.viscom2016;
 
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -10,7 +9,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -57,7 +55,7 @@ public class GcmIntentService extends IntentService {
                     Log.i(TAG, "Working... " + (i+1)
                             + "/5 @ " + SystemClock.elapsedRealtime());
                     try {
-                        Thread.sleep(5000);
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
                     }
                 }
@@ -65,10 +63,28 @@ public class GcmIntentService extends IntentService {
                 // Post notification of received message.
                 Log.d("qwer","qwer");
                 Log.d("hutiya4" , "noti"+"  " + extras.getString("m"));
-                Toast.makeText(GcmIntentService.this,extras.getString("m"),Toast.LENGTH_LONG).show();
+               // Toast.makeText(GcmIntentService.this,extras.getString("m"),Toast.LENGTH_LONG).show();
                 Intent i = new Intent(this, Notification.class);
                 i.putExtra("name", "mhhhh");
                 startService(i);
+//
+//                android.support.v4.app.NotificationCompat.Builder notification;
+//                notification = new android.support.v4.app.NotificationCompat.Builder(this);
+//                notification.setAutoCancel(true);
+//                notification.setSmallIcon(R.drawable.common_google_signin_btn_icon_light);
+//                notification.setTicker("New Message!");
+//                notification.setShowWhen(true);
+//                notification.setContentTitle("Test");
+//                notification.setContentText(" Click Here to view your New Message ");
+//                notification.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+//                notification.setDefaults(android.app.Notification.DEFAULT_VIBRATE | android.app.Notification.DEFAULT_LIGHTS);
+//                Intent i = new Intent(this,MainActivity.class);
+//
+//                PendingIntent pendingIntent = PendingIntent.getActivity(this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+//                notification.setContentIntent(pendingIntent);
+//                NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//                manager.notify(NOTIFICATION_ID,notification.build());
+
                 Log.i(TAG, "Received: " + extras.toString());
             }
         }

@@ -589,7 +589,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
 
                 showProgress(false);
 
-  //              Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
+                Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
 
                 if (response.equals("Success")) {
 

@@ -18,7 +18,10 @@ public class Notification extends IntentService {
     Intent i;
 
     public Notification() {
+
         super("Notification");
+        Log.v("laure","lelo");
+
     }
 
     @Override
