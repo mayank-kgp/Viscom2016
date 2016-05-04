@@ -1,20 +1,10 @@
 package com.example.sanatkumarsaha.viscom2016;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -25,21 +15,17 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.Toast;
-
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -48,6 +34,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
@@ -56,7 +44,6 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
@@ -323,11 +310,13 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        String  url = null;
+        String  url = "http://cognitio.co.in/kgp/gcm2.php?push=true";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+
+                Log.d("Hutiya2",response);
 
             if (response.equals("Success")){
 
@@ -349,14 +338,24 @@ public class MainActivity extends AppCompatActivity
             @Override
             protected Map<String,String> getParams(){
                 Map<String,String> params = new HashMap<String, String>();
-                params.put("name",sp.getString("name",""));
+
+                JSONObject object = new JSONObject();
+
+                try {
+                    object.put("name",sp.getString("name",""));
+                    object.put("mobile_no",sp.getString("mobile_no",""));
+                    object.put("stress",stress.getProgress()+"");
+                    object.put("urgency",urgency.getProgress()+"");
+                    object.put("message",message.getText().toString());
+                    object.put("location",location.getText().toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
                 params.put("email",sp.getString("email",""));
-                params.put("type", emergency_type);
-                params.put("stress",stress.getProgress()+"");
+                params.put("category", emergency_type);
                 params.put("password",sp.getString("password",""));
-                params.put("urgency",urgency.getProgress()+"");
-                params.put("message",message.getText().toString());
-                params.put("location", location.getText().toString());
+                params.put("message",object.toString());
                 return params;
             }
 

@@ -27,4 +27,7 @@ dependencies {
     compile 'com.mcxiaoke.volley:library:1.0.19'
     compile 'com.wdullaer:materialdatetimepicker:2.1.1'
     compile 'org.adw.library:discrete-seekbar:1.0.1'
+    compile 'com.google.android.gms:play-services-gcm:8.4.0'
+
 }
+apply plugin: 'com.google.gms.google-services'

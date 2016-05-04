@@ -3,31 +3,23 @@ package com.example.sanatkumarsaha.viscom2016;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.os.Environment;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -42,45 +34,25 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
@@ -91,11 +63,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import javax.net.ssl.HttpsURLConnection;
 
-import static android.Manifest.permission.CHANGE_COMPONENT_ENABLED_STATE;
 import static android.Manifest.permission.READ_CONTACTS;
 
 
@@ -103,6 +71,7 @@ import static android.Manifest.permission.READ_CONTACTS;
  * A login screen that offers login via email/password.
  */
 public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -139,7 +108,10 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
     PublicKey publicKey;
 
     byte[] encodedBytes = null;
-
+    GoogleCloudMessaging gcmObj;
+    String regId = "";
+    Context applicationContext;
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
 
     @Override
@@ -206,6 +178,17 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                SharedPreferences.Editor editor = sp.edit();
+                if (checkBox.isChecked()) {
+
+
+                    editor.putString("memail", mEmailView.getText().toString());
+                    editor.putString("mpassword", mPasswordView.getText().toString());
+                } else {
+                    editor.putString("memail", "");
+                    editor.putString("mpassword", "");
+                }
+                editor.apply();
                 attemptLogin();
             }
         });
@@ -323,7 +306,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                 @Override
                 public void onResponse(String response) {
 
-                    showProgress(false);
+                    Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
 
                     if(response.equals("Invalid password")) {
                         mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -338,12 +321,21 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                         try {
 
                             user_details = new JSONObject(response);
+                            Log.d("hutiya",sp.getString("regId",""));
+                            if (sp.getString("regId","").equals("")){
+
+                                registerInBackground(email);
+
+                            } else {
+                                storeRegIdinServer(email);
+                            }
 
                             SharedPreferences.Editor editor = sp.edit();
                             editor.putString("name", user_details.getString("name"));
                             editor.putBoolean("isClient", Boolean.parseBoolean(user_details.getString("isClient")) );
                             editor.putBoolean("isProvider", Boolean.parseBoolean(user_details.getString("isProvider")));
                             editor.putString("password", URLEncoder.encode(new String(encodedBytes),"UTF-8") );
+                            editor.putString("mobile_no",user_details.getString("mobile_no"));
 
                             if (Boolean.parseBoolean(user_details.getString("isProvider"))) {
 
@@ -354,21 +346,10 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                             editor.putString("email", email);
                             editor.putBoolean("LogInStat", true);
                             editor.commit();
-                            if (checkBox.isChecked()) {
-                                editor.putString("memail", email);
-                                editor.putString("mpassword", password);
-                            } else {
-                                editor.putString("memail", "");
-                                editor.putString("mpassword", "");
-                            }
 
                             Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
 
 
-                            Intent i = new Intent(LogIn.this, MainActivity.class);
-                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(i);
-                            finish();
 
                         } catch (JSONException e) {
                             Log.d("Sanat_check","Gand Phati");
@@ -526,7 +507,132 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
         startActivity(i);
 
     }
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil
+                .isGooglePlayServicesAvailable(this);
+        // When Play services not found in device
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                // Show Error dialog to install Play services
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Toast.makeText(
+                        applicationContext,
+                        "This device doesn't support Play services, App will not work normally",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }
+            return false;
+        } else {
+            Toast.makeText(
+                    applicationContext,
+                    "This device supports Play services, App will work normally",
+                    Toast.LENGTH_LONG).show();
+        }
+        return true;
+    }
 
+    private void registerInBackground(final String email) {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                Log.d("hutiya2","qwer");
+                String msg = "";
+                try {
+                    if (gcmObj == null) {
+                        gcmObj = GoogleCloudMessaging
+                                .getInstance(getApplicationContext());
+                    }
+                    regId = gcmObj
+                            .register(ApplicationConstants.GOOGLE_PROJ_ID);
+                    msg = "Registration ID :" + regId;
+
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg) {
+                if (!TextUtils.isEmpty(regId)) {
+                    // Store RegId created by GCM Server in SharedPref
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putString("regId",regId);
+                    editor.apply();
+                    Toast.makeText(
+                            LogIn.this,
+                            "Registered with GCM Server successfully.nn"
+                                    + msg, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(
+                            LogIn.this,
+                            "Reg ID Creation Failed.nnEither you haven't enabled Internet or GCM server is busy right now. Make sure you enabled Internet and try registering again after some time."
+                                    + msg, Toast.LENGTH_LONG).show();
+                }
+
+                storeRegIdinServer(email);
+            }
+        }.execute(null, null, null);
+    }
+
+    private void storeRegIdinServer(final String email){
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, ApplicationConstants.APP_SERVER_URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                Log.d("Line 583", response);
+                showProgress(false);
+
+                if (response.equals("Success")) {
+
+//                    Toast.makeText(LogIn.this,
+//                            "Reg Id shared successfully with Web App ",
+//                            Toast.LENGTH_LONG).show();
+
+                    Intent i = new Intent(LogIn.this, MainActivity.class);
+                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(i);
+                    finish();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+//                Toast.makeText(LogIn.this,
+//                        "Login Failure ",
+//                        Toast.LENGTH_LONG).show();
+
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("email",email);
+                try {
+                    params.put("password",URLEncoder.encode(new String(encodedBytes),"UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                params.put("regId",sp.getString("regId",""));
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Content-Type","application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+
+        volleySingleton.getmRequestQueue().add(stringRequest);
+
+    }
 
 }
 

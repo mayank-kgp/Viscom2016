@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "1011487893491",
+    "project_id": "viscom2016-ca7e1"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011487893491:android:77a7ecb180dd4031",
+        "android_client_info": {
+          "package_name": "com.example.sanatkumarsaha.viscom2016"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAG8d4AV2fhpIfeFxhFPfcRy515ZRE5Xq0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
