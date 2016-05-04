@@ -170,7 +170,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
 
         if (!sp.getString("memail","").equals("")){
             mEmailView.setText(sp.getString("memail",""));
-            mPasswordView.setText(sp.getString("password",""));
+            mPasswordView.setText(sp.getString("mpassword",""));
             checkBox.setChecked(true);
         }
 
@@ -306,13 +306,15 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                 @Override
                 public void onResponse(String response) {
 
-                    Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
+
 
                     if(response.equals("Invalid password")) {
+                        showProgress(false);
                         mPasswordView.setError(getString(R.string.error_incorrect_password));
                         mPasswordView.requestFocus();
                     }
                     else if(response.equals("User not found")){
+                        showProgress(false);
                         mEmailView.setError(getString(R.string.error_incorrect_username));
                         mEmailView.requestFocus();
 
@@ -322,6 +324,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
 
                             user_details = new JSONObject(response);
                             Log.d("hutiya",sp.getString("regId",""));
+                            Log.d("sanat_testing",sp.getString("regId",""));
                             if (sp.getString("regId","").equals("")){
 
                                 registerInBackground(email);
@@ -335,7 +338,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                             editor.putBoolean("isClient", Boolean.parseBoolean(user_details.getString("isClient")) );
                             editor.putBoolean("isProvider", Boolean.parseBoolean(user_details.getString("isProvider")));
                             editor.putString("password", URLEncoder.encode(new String(encodedBytes),"UTF-8") );
-                            editor.putString("mobile_no",user_details.getString("mobile_no"));
+                            editor.putString("mobile_no",user_details.getString("mobile"));
 
                             if (Boolean.parseBoolean(user_details.getString("isProvider"))) {
 
@@ -347,7 +350,8 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                             editor.putBoolean("LogInStat", true);
                             editor.commit();
 
-                            Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
+                         //   Toast.makeText(LogIn.this,response,Toast.LENGTH_SHORT).show();
+
 
 
 
@@ -583,14 +587,15 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
             @Override
             public void onResponse(String response) {
 
-                Log.d("Line 583", response);
                 showProgress(false);
+
+  //              Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
 
                 if (response.equals("Success")) {
 
 //                    Toast.makeText(LogIn.this,
-//                            "Reg Id shared successfully with Web App ",
-//                            Toast.LENGTH_LONG).show();
+//                            regId ,
+//                            Toast.LENGTH_SHORT).show();
 
                     Intent i = new Intent(LogIn.this, MainActivity.class);
                     i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);

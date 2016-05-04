@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -56,7 +57,7 @@ public class GcmIntentService extends IntentService {
                     Log.i(TAG, "Working... " + (i+1)
                             + "/5 @ " + SystemClock.elapsedRealtime());
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(5000);
                     } catch (InterruptedException e) {
                     }
                 }
@@ -64,6 +65,7 @@ public class GcmIntentService extends IntentService {
                 // Post notification of received message.
                 Log.d("qwer","qwer");
                 Log.d("hutiya4" , "noti"+"  " + extras.getString("m"));
+                Toast.makeText(GcmIntentService.this,extras.getString("m"),Toast.LENGTH_LONG).show();
                 Intent i = new Intent(this, Notification.class);
                 i.putExtra("name", "mhhhh");
                 startService(i);

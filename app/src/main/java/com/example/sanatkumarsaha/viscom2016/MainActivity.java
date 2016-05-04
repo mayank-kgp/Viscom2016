@@ -316,17 +316,17 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onResponse(String response) {
 
-                Log.d("Hutiya2",response);
+                Toast.makeText(MainActivity.this,response,Toast.LENGTH_SHORT).show();
 
-            if (response.equals("Success")){
-
-                Toast.makeText(MainActivity.this,"Request Sent Successfully",Toast.LENGTH_LONG).show();
-
-            } else {
-
-                Toast.makeText(MainActivity.this,"Request Error",Toast.LENGTH_LONG).show();
-
-            }
+//            if (response.equals("Success")){
+//
+//                Toast.makeText(MainActivity.this,"Request Sent Successfully",Toast.LENGTH_SHORT).show();
+//
+//            } else {
+//
+//                Toast.makeText(MainActivity.this,"Request Error",Toast.LENGTH_SHORT).show();
+//
+//            }
 
             }
         }, new Response.ErrorListener() {
