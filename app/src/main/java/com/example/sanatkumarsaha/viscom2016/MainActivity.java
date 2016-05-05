@@ -1,10 +1,12 @@
 package com.example.sanatkumarsaha.viscom2016;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -20,14 +22,17 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -38,11 +43,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +62,7 @@ public class MainActivity extends AppCompatActivity
     ImageView imageView;
     static final int REQUEST_IMAGE_CAPTURE =1;
     static final int REQUEST_SELECT_FILE =2;
-    RelativeLayout custom;
+    RelativeLayout medicalLayout,securityLayout,emotionLayout,custom,bg;
     RelativeLayout floating, categories, providerLayout;
     LinearLayout main;
     DiscreteSeekBar stress, urgency;
@@ -65,6 +73,7 @@ public class MainActivity extends AppCompatActivity
     CheckBox medical, security, emotion, education;
     String categoryParams = "";
     String emergency_type = null;
+    ProgressBar mProgressView;
 
     String public_Key = "MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHTHSaj/S4iuj6oGvUS4zVb++Qio\n" +
             "Nm4/kS+kSducJRbu4McJVPW2ERXyMMCioZhYfByylmv6sahiA8w1/TJtgW/0fgPX\n" +
@@ -81,6 +90,9 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mProgressView = (ProgressBar)findViewById(R.id.login_progress);
+        bg = (RelativeLayout)findViewById(R.id.bg);
+
 
         floating = (RelativeLayout)findViewById(R.id.floating);
         categories = (RelativeLayout)findViewById(R.id.categories);
@@ -96,8 +108,34 @@ public class MainActivity extends AppCompatActivity
         education = (CheckBox)findViewById(R.id.educationBox);
         providerLayout = (RelativeLayout)findViewById(R.id.providerLayout);
 
+        medicalLayout = (RelativeLayout)findViewById(R.id.medical);
+        securityLayout = (RelativeLayout)findViewById(R.id.security);
+        emotionLayout = (RelativeLayout)findViewById(R.id.emotion);
+        custom = (RelativeLayout)findViewById(R.id.custom);
+
 
         volleySingleton = VolleySingleton.getInstance();
+
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                medicalLayout.setBackground(getResources().getDrawable(R.drawable.ripple_effect_red));
+                securityLayout.setBackground(getResources().getDrawable(R.drawable.ripple_effect));
+                emotionLayout.setBackground(getResources().getDrawable(R.drawable.ripple_effect_blue));
+                custom.setBackground(getResources().getDrawable(R.drawable.ripple_effect_black));
+
+            }
+
+        else {
+
+                medicalLayout.setBackgroundColor(Color.rgb(198,40,40));
+                securityLayout.setBackgroundColor(Color.rgb(46,125,50));
+                emotionLayout.setBackgroundColor(Color.rgb(63,81,255));
+                custom.setBackgroundColor(Color.rgb(33,33,33));
+
+        }
+
+
 
         try {
             byte[] encodedKey = Base64.decode(public_Key.getBytes("utf-8"), Base64.DEFAULT);
@@ -225,17 +263,67 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.logout) {
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putBoolean("LogInStat",false);
-            editor.putString("uri", "");
-            editor.commit();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                finishAffinity();
-            } else {
-                Intent i = new Intent(this,LogIn.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(i);
-            }
+            showProgress(true);
+            bg.setVisibility(View.VISIBLE);
+
+            String url = "http://cognitio.co.in/kgp/logout.php";
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+
+                   showProgress(false);
+                    bg.setVisibility(View.GONE);
+
+                    Toast.makeText(MainActivity.this,response,Toast.LENGTH_LONG).show();
+
+                    if (response.equals("Success")){
+
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.putBoolean("LogInStat",false);
+                        editor.putString("uri", "");
+                        editor.commit();
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//                            finishAffinity();
+//                        } else {
+                            Intent i = new Intent(MainActivity.this,LogIn.class);
+                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(i);
+//                        }
+
+                    }
+                    else {
+                        Toast.makeText(MainActivity.this, response, Toast.LENGTH_LONG).show();
+                    }
+
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    showProgress(false);
+                    bg.setVisibility(View.GONE);
+                    Toast.makeText(MainActivity.this,"Logout Failure",Toast.LENGTH_LONG).show();
+                }
+            }){
+                @Override
+                protected Map<String,String> getParams(){
+                    Map<String,String> params = new HashMap<String, String>();
+                    params.put("email",sp.getString("email",""));
+                    params.put("password",sp.getString("password",""));
+                    return params;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String,String> params = new HashMap<String, String>();
+                    params.put("Content-Type","application/x-www-form-urlencoded");
+                    return params;
+                }
+            };
+
+            volleySingleton.getmRequestQueue().add(stringRequest);
+
+
 
         }
         if (id == R.id.timing) {
@@ -272,6 +360,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void close(View v){
+
         floating.animate().translationY(floating.getHeight()).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -284,6 +373,23 @@ public class MainActivity extends AppCompatActivity
         });
     }
     public void closeCategories(View v){
+
+        if (!medical.isChecked() && !security.isChecked() && !emotion.isChecked() && !education.isChecked()){
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Please Select at least one of the categories");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+
+                }
+            }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User cancelled the dialog
+                }
+            });
+            builder.show();
+            return;
+        } else
 
 
         categories.animate().translationY(categories.getHeight()).setListener(new AnimatorListenerAdapter() {
@@ -304,11 +410,17 @@ public class MainActivity extends AppCompatActivity
 
     public void submit(View v){
 
+//        this.sendBroadcast(new Intent("com.google.android.intent.action.GTALK_HEARTBEAT"));
+//        this.sendBroadcast(new Intent("com.google.android.intent.action.MCS_HEARTBEAT"));
+
 
         if (location.getText().toString().equals("")){
             location.setError("Field Required");
             return;
         }
+
+        showProgress(true);
+        bg.setVisibility(View.VISIBLE);
 
         String  url = "http://cognitio.co.in/kgp/gcm2.php?push=true";
 
@@ -316,23 +428,28 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onResponse(String response) {
 
-                Toast.makeText(MainActivity.this,response,Toast.LENGTH_SHORT).show();
+                showProgress(false);
+                bg.setVisibility(View.GONE);
 
-//            if (response.equals("Success")){
-//
-//                Toast.makeText(MainActivity.this,"Request Sent Successfully",Toast.LENGTH_SHORT).show();
-//
-//            } else {
-//
-//                Toast.makeText(MainActivity.this,"Request Error",Toast.LENGTH_SHORT).show();
-//
-//            }
+
+            if (response.equals("Success")){
+
+                Toast.makeText(MainActivity.this,"Request Sent Successfully",Toast.LENGTH_SHORT).show();
+
+            } else {
+
+                Toast.makeText(MainActivity.this,"Request Error",Toast.LENGTH_SHORT).show();
+
+            }
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this,"Failure",Toast.LENGTH_LONG).show();
+
+                showProgress(false);
+                bg.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this,"Success",Toast.LENGTH_LONG).show();
             }
         }){
             @Override
@@ -348,6 +465,12 @@ public class MainActivity extends AppCompatActivity
                     object.put("urgency",urgency.getProgress()+"");
                     object.put("message",message.getText().toString());
                     object.put("location",location.getText().toString());
+                    object.put("email",sp.getString("email",""));
+                    object.put("password",sp.getString("password",""));
+                    Calendar c = Calendar.getInstance();
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String formattedDate = df.format(c.getTime());
+                    object.put("time",formattedDate);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -366,6 +489,11 @@ public class MainActivity extends AppCompatActivity
                 return params;
             }
         };
+
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         volleySingleton.getmRequestQueue().add(stringRequest);
 
@@ -455,6 +583,10 @@ public class MainActivity extends AppCompatActivity
         if (education.isChecked()) categoryParams += "Education ";
 
 
+        showProgress(true);
+        bg.setVisibility(View.VISIBLE);
+
+
         String  url = "http://cognitio.co.in/kgp/updatecat.php";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
@@ -464,12 +596,19 @@ public class MainActivity extends AppCompatActivity
 
                 if (response.equals("Success")){
 
+
+                    showProgress(false);
+                    bg.setVisibility(View.GONE);
+
                     Toast.makeText(MainActivity.this,"Data Saved Successfully",Toast.LENGTH_LONG).show();
                     SharedPreferences.Editor editor = sp.edit();
                     editor.putString("category",categoryParams);
                     editor.apply();
 
                 } else {
+
+                    showProgress(false);
+                    bg.setVisibility(View.GONE);
 
                     Toast.makeText(MainActivity.this,response,Toast.LENGTH_LONG).show();
 
@@ -479,6 +618,9 @@ public class MainActivity extends AppCompatActivity
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+
+                showProgress(false);
+                bg.setVisibility(View.GONE);
                 Toast.makeText(MainActivity.this,"Failure",Toast.LENGTH_LONG).show();
             }
         }){
@@ -512,6 +654,30 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 
 }

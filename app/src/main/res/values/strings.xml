@@ -43,5 +43,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="title_activity_availability">Availability</string>
     <string name="title_activity_requests">Requests</string>
+    <string name="title_activity_accepted__request">Accepted_Request</string>
 
 </resources>

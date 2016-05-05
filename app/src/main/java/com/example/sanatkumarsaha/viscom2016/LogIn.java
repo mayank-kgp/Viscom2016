@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -43,6 +44,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -64,6 +66,7 @@ import java.util.Map;
 
 import javax.crypto.Cipher;
 
+import static android.Manifest.permission.CALL_PHONE;
 import static android.Manifest.permission.READ_CONTACTS;
 
 
@@ -118,6 +121,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+        checkPlayServices();
 
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -166,6 +170,18 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
             }
         });
 
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
+//
+//            // No explanation needed, we can request the permission.
+//
+//            ActivityCompat.requestPermissions(this,
+//                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+//                    1);
+//            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+//            // app-defined int constant. The callback method gets the
+//            // result of the request.
+//        }
+
         sp = getSharedPreferences("Check", Context.MODE_PRIVATE);
 
         if (!sp.getString("memail","").equals("")){
@@ -178,23 +194,23 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                SharedPreferences.Editor editor = sp.edit();
-                if (checkBox.isChecked()) {
 
-
-                    editor.putString("memail", mEmailView.getText().toString());
-                    editor.putString("mpassword", mPasswordView.getText().toString());
-                } else {
-                    editor.putString("memail", "");
-                    editor.putString("mpassword", "");
-                }
-                editor.apply();
                 attemptLogin();
             }
         });
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            if (checkSelfPermission(CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{CALL_PHONE},1);
+            }
+        }
+
+
+
 
     }
 
@@ -255,6 +271,18 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
+
+        SharedPreferences.Editor editor = sp.edit();
+        if (checkBox.isChecked()) {
+
+
+            editor.putString("memail", mEmailView.getText().toString());
+            editor.putString("mpassword", mPasswordView.getText().toString());
+        } else {
+            editor.putString("memail", "");
+            editor.putString("mpassword", "");
+        }
+        editor.apply();
        // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -356,7 +384,6 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
 
 
                         } catch (JSONException e) {
-                            Log.d("Sanat_check","Gand Phati");
                             e.printStackTrace();
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
@@ -512,17 +539,18 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
 
     }
     private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil
+        GoogleApiAvailability gp = GoogleApiAvailability.getInstance();
+        int resultCode = gp
                 .isGooglePlayServicesAvailable(this);
         // When Play services not found in device
         if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+            if (gp.isUserResolvableError(resultCode)) {
                 // Show Error dialog to install Play services
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                gp.getErrorDialog(LogIn.this,resultCode,
                         PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
                 Toast.makeText(
-                        applicationContext,
+                        getApplicationContext(),
                         "This device doesn't support Play services, App will not work normally",
                         Toast.LENGTH_LONG).show();
                 finish();
@@ -530,7 +558,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
             return false;
         } else {
             Toast.makeText(
-                    applicationContext,
+                    getApplicationContext(),
                     "This device supports Play services, App will work normally",
                     Toast.LENGTH_LONG).show();
         }
@@ -565,15 +593,15 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
                     SharedPreferences.Editor editor = sp.edit();
                     editor.putString("regId",regId);
                     editor.apply();
-                    Toast.makeText(
-                            LogIn.this,
-                            "Registered with GCM Server successfully.nn"
-                                    + msg, Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(
+//                            LogIn.this,
+//                            "Registered with GCM Server successfully.nn"
+//                                    + msg, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(
-                            LogIn.this,
-                            "Reg ID Creation Failed.nnEither you haven't enabled Internet or GCM server is busy right now. Make sure you enabled Internet and try registering again after some time."
-                                    + msg, Toast.LENGTH_LONG).show();
+//                    Toast.makeText(
+//                            LogIn.this,
+//                            "Reg ID Creation Failed.nnEither you haven't enabled Internet or GCM server is busy right now. Make sure you enabled Internet and try registering again after some time."
+//                                    + msg, Toast.LENGTH_LONG).show();
                 }
 
                 storeRegIdinServer(email);
@@ -589,13 +617,10 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
 
                 showProgress(false);
 
-                Toast.makeText(LogIn.this,response,Toast.LENGTH_LONG).show();
 
                 if (response.equals("Success")) {
 
-//                    Toast.makeText(LogIn.this,
-//                            regId ,
-//                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LogIn.this,"Logged In Successfully",Toast.LENGTH_LONG).show();
 
                     Intent i = new Intent(LogIn.this, MainActivity.class);
                     i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -608,9 +633,7 @@ public class LogIn extends AppCompatActivity implements LoaderCallbacks<Cursor> 
             @Override
             public void onErrorResponse(VolleyError error) {
 
-//                Toast.makeText(LogIn.this,
-//                        "Login Failure ",
-//                        Toast.LENGTH_LONG).show();
+                Toast.makeText(LogIn.this,"Log In Error",Toast.LENGTH_LONG).show();
 
             }
         }){

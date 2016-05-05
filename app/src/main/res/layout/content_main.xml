@@ -10,6 +10,7 @@
     android:background="#ffffff"
     android:id="@+id/client">
 
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -56,7 +57,6 @@
                 android:layout_weight="1"
                 android:id="@+id/medical"
                 android:onClick="medicalClick"
-                android:background="@drawable/ripple_effect_red"
                 android:clickable="true"
                 android:layout_margin="10dp"
                 android:elevation="5dp">
@@ -87,7 +87,6 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:layout_margin="10dp"
-                android:background="@drawable/ripple_effect"
                 android:elevation="5dp"
                 android:clickable="true"
                 android:id="@+id/security"
@@ -128,7 +127,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/ripple_effect_blue"
                 android:clickable="true"
                 android:layout_margin="10dp"
                 android:elevation="5dp"
@@ -160,7 +158,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/ripple_effect_black"
                 android:clickable="true"
                 android:layout_margin="10dp"
                 android:elevation="5dp"
@@ -170,7 +167,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Custom"
+                    android:text="Education"
                     android:id="@+id/textView1"
                     android:textColor="#ffffff"
                     android:layout_below="@+id/imageView5"
@@ -215,7 +212,8 @@
                 android:background="#ffffff"
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
-                android:paddingTop="20dp">
+                android:paddingTop="20dp"
+                android:focusableInTouchMode="true">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -256,9 +254,10 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="15dp"
                     android:textColor="#1d9a1d"
-                    android:layout_marginBottom="15dp" />
+                    android:layout_marginBottom="5dp" />
 
                 <org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
+                    tools:targetApi="LOLLIPOP"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:dsb_min="0"
@@ -278,10 +277,11 @@
                     android:text="Urgency"
                     android:id="@+id/textView9"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="5dp"
                     android:textColor="#1d9a1d"
-                    android:layout_marginBottom="15dp" />
+                    android:layout_marginBottom="5dp" />
                 <org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
+                    tools:targetApi="LOLLIPOP"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:dsb_min="0"
@@ -298,11 +298,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Message"
+                    android:text="Message5"
                     android:id="@+id/textView6"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:textColor="#1d9a1d" />
 
                 <EditText
@@ -310,9 +310,9 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/message"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp"
-                    android:textColor="#151515" />
+                    android:layout_marginTop="5dp"
+                    android:textColor="#151515"
+                    android:layout_marginBottom="5dp" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -320,8 +320,8 @@
                     android:text="Location"
                     android:id="@+id/textView7"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:textColor="#1d9a1d" />
 
                 <EditText
@@ -329,8 +329,8 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/location"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:textColor="#151515" />
 
                 <Button
@@ -463,6 +463,27 @@
         </ScrollView>
 
     </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/mdtp_white"
+        android:id="@+id/bg"
+        android:visibility="gone"
+        >
+
+    </RelativeLayout>
+
+    <ProgressBar
+        android:id="@+id/login_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:visibility="gone"
+         />
 
 
 </RelativeLayout>

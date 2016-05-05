@@ -65,7 +65,7 @@ public class GcmIntentService extends IntentService {
                 Log.d("hutiya4" , "noti"+"  " + extras.getString("m"));
                // Toast.makeText(GcmIntentService.this,extras.getString("m"),Toast.LENGTH_LONG).show();
                 Intent i = new Intent(this, Notification.class);
-                i.putExtra("name", "mhhhh");
+                i.putExtra("name", extras.getString("m"));
                 startService(i);
 //
 //                android.support.v4.app.NotificationCompat.Builder notification;

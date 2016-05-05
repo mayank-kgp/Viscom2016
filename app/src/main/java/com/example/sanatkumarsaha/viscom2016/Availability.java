@@ -1,7 +1,11 @@
 package com.example.sanatkumarsaha.viscom2016;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -10,6 +14,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -34,14 +40,16 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
 
     private EditText from, to;
     boolean flag2 = true;
-    int fromHour, toHour;
+    int fromHour = -1, toHour = -1;
     VolleySingleton volleySingleton;
     SharedPreferences sp;
+    RelativeLayout bg;
+    ProgressBar mProgressView;
 
     String public_Key = "MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHTHSaj/S4iuj6oGvUS4zVb++Qio\n" +
             "Nm4/kS+kSducJRbu4McJVPW2ERXyMMCioZhYfByylmv6sahiA8w1/TJtgW/0fgPX\n" +
             "WROngdhuci5ITl0LjHu4h+siiTwVjFidSqQm1g30xpdiNwh7GYIu/nw5TdunAtZU\n" +
-            "yRzLGB4qmNsHH0tTAgMBAAE=" ;
+            "yRzLGB4qmNsHH0tTAgMBAAE=";
     PublicKey publicKey;
 
     @Override
@@ -50,6 +58,9 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
         setContentView(R.layout.activity_availability);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mProgressView = (ProgressBar)findViewById(R.id.login_progress);
+        bg = (RelativeLayout)findViewById(R.id.bg);
 
         try {
             byte[] encodedKey = Base64.decode(public_Key.getBytes("utf-8"), Base64.DEFAULT);
@@ -147,22 +158,41 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
     public void submit(View v){
 
         String url = "http://cognitio.co.in/kgp/changetim.php";
+        showProgress(true);
+        bg.setVisibility(View.VISIBLE);
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
+                Toast.makeText(Availability.this,response,Toast.LENGTH_LONG).show();
+
+
                 if (response.equals("Success")){
+                    showProgress(false);
+                    bg.setVisibility(View.GONE);
+
+                    String str1, str2;
+
+                    str1 = sp.getString("from",""); str2 = sp.getString("to","");
 
                     SharedPreferences.Editor editor = sp.edit();
-                    editor.putString("from",fromHour+"");
-                    editor.putString("to",toHour+"");
+                    if (fromHour != -1)
+                        editor.putString("from",fromHour+"");
+                    else editor.putString("from",str1);
+
+                    if (toHour != -1)
+                        editor.putString("to",toHour+"");
+                    else editor.putString("to",str2);
                     editor.apply();
 
-                    Toast.makeText(Availability.this,"Data Saved Successfully",Toast.LENGTH_LONG).show();
+                 //   Toast.makeText(Availability.this,"Data Saved Successfully",Toast.LENGTH_LONG).show();
 
                 } else {
 
-                    Toast.makeText(Availability.this,"Request Error",Toast.LENGTH_LONG).show();
+                    showProgress(false);
+                    bg.setVisibility(View.GONE);
+
+                //    Toast.makeText(Availability.this,"Request Error",Toast.LENGTH_LONG).show();
 
                 }
 
@@ -170,7 +200,10 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(Availability.this,"Failure",Toast.LENGTH_LONG).show();
+
+                showProgress(false);
+                bg.setVisibility(View.GONE);
+                Toast.makeText(Availability.this,error.toString(),Toast.LENGTH_LONG).show();
             }
         }){
             @Override
@@ -178,8 +211,15 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
                 Map<String,String> params = new HashMap<String, String>();
                 params.put("email",sp.getString("email",""));
                 params.put("password",sp.getString("password",""));
-                params.put("from",fromHour+"");
-                params.put("to",toHour+"");
+
+                if (fromHour != -1)
+                    params.put("from",fromHour+"");
+                else params.put("from",sp.getString("from",""));
+
+                if (toHour != -1)
+                    params.put("to",toHour+"");
+                else params.put("to",sp.getString("toHour",""));
+
                 return params;
             }
 
@@ -194,4 +234,29 @@ public class Availability extends AppCompatActivity implements TimePickerDialog.
         volleySingleton.getmRequestQueue().add(stringRequest);
         onBackPressed();
     }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+
 }
